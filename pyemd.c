@@ -4,7 +4,6 @@
 float double_dist(feature_t *f1, feature_t *f2)
 {
   double d = *f1 - *f2;
-  printf("%f, %f: %f\n", *f1, *f2, sqrt(d * d));
   return sqrt(d * d);
 }
 

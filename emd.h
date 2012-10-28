@@ -18,7 +18,7 @@
 
 /* DEFINITIONS */
 #define MAX_SIG_SIZE   500
-#define MAX_ITERATIONS 10
+#define MAX_ITERATIONS 500
 #define EPSILON        1e-6
 
 /*****************************************************************************/

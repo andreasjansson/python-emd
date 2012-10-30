@@ -10,6 +10,13 @@ Example Usage
     >>> emd.emd(range(5), range(5), [0, 1, 0, 0, 0], [0, 0, 0, 0, 1])
     3.0
 
+Installation
+------------
+
+    sudo python setup.py install
+
+NB: The module has only been tested on Linux and doesn't appear to be working on Windows. I'll try to fix that soon.
+
 References
 ----------
 

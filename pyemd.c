@@ -1,6 +1,15 @@
 #include <Python.h>
 #include "emd.h"
 
+// define PyInt_* macros for Python 3.x
+#ifndef PyInt_Check
+#define PyInt_Check             PyLong_Check
+#define PyInt_FromLong          PyLong_FromLong
+#define PyInt_AsLong            PyLong_AsLong
+#define PyInt_Type              PyLong_Type
+#endif
+
+
 float double_dist(feature_t *f1, feature_t *f2)
 {
   double d = *f1 - *f2;
@@ -122,9 +131,34 @@ static PyMethodDef functions[] = {
     {NULL, NULL, 0, NULL}
 };
 
+#if PY_MAJOR_VERSION >= 3
+//-----------------------------------------------------------------------------
+//   Declaration of module definition for Python 3.x.
+//-----------------------------------------------------------------------------
+static struct PyModuleDef g_ModuleDef = {
+    PyModuleDef_HEAD_INIT,
+    "emd",
+    NULL,
+    -1,
+    functions,                             // methods
+    NULL,                                  // m_reload
+    NULL,                                  // traverse
+    NULL,                                  // clear
+    NULL                                   // free
+};
+#endif
+
+
+
+#if PY_MAJOR_VERSION >= 3
+PyObject * PyInit_emd(void)
+{
+	return PyModule_Create(&g_ModuleDef);
+#else
 PyMODINIT_FUNC initemd(void)
 {
     Py_InitModule(
         "emd", functions
         );
+#endif
 }

@@ -19,6 +19,7 @@ float double_dist(feature_t *f1, feature_t *f2)
 static PyObject *compute_emd(PyObject *self, PyObject *args, PyObject *keywds)
 {
   static char *kwlist[] = {"feature1", "feature2", "weight1", "weight2",
+						   "return_flows",
                            NULL};
 
   PyObject *feature1, *feature2, *weight1, *weight2;
@@ -26,12 +27,14 @@ static PyObject *compute_emd(PyObject *self, PyObject *args, PyObject *keywds)
   float *w1, *w2;
   int length1, length2;
   signature_t signature1, signature2;
+  flow_t *flow;
   float distance;
   PyObject *item;
-  int i;
+  int i, flow_size;
+  unsigned short int return_flows = 0;
 
-  if(!PyArg_ParseTupleAndKeywords(args, keywds, "OOOO", kwlist,
-                                  &feature1, &feature2, &weight1, &weight2))
+  if(!PyArg_ParseTupleAndKeywords(args, keywds, "OOOO|H", kwlist,
+                                  &feature1, &feature2, &weight1, &weight2, &return_flows))
      return NULL;
 
   if(!PySequence_Check(feature1)) {
@@ -71,6 +74,13 @@ static PyObject *compute_emd(PyObject *self, PyObject *args, PyObject *keywds)
   f2 = alloca(length2 * sizeof(double));
   w1 = alloca(length1 * sizeof(double));
   w2 = alloca(length2 * sizeof(double));
+
+  if (return_flows) {
+	  flow = alloca((length1 + length2 - 1) * sizeof(flow_t));
+  }else{
+	  flow = NULL;
+
+  }
 
   for(i = 0; i < length1; i ++) {
     item = PySequence_GetItem(feature1, i);
@@ -120,8 +130,20 @@ static PyObject *compute_emd(PyObject *self, PyObject *args, PyObject *keywds)
   signature2.Features = f2;
   signature2.Weights = w2;
 
-  distance = emd(&signature1, &signature2, double_dist, 0, 0);
+  distance = emd(&signature1, &signature2, double_dist, flow, &flow_size);
 
+  if (return_flows){
+	  PyObject *returnList = PyList_New((Py_ssize_t) flow_size);
+	  for(i = 0; i < flow_size; i++) {
+		  PyObject *tuple = PyTuple_New(3);
+		  PyTuple_SetItem(tuple, 0, Py_BuildValue("I", flow[i].from));
+		  PyTuple_SetItem(tuple, 1, Py_BuildValue("I", flow[i].to));
+		  PyTuple_SetItem(tuple, 2, Py_BuildValue("d", flow[i].amount));
+		  PyList_SetItem(returnList, i, tuple);
+	  }
+	  return returnList;
+
+  }
   return Py_BuildValue("d", distance);
 }
 
